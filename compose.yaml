@@ -1,0 +1,58 @@
+services:
+  postgres:
+    image: 'postgres:15-alpine'
+    container_name: tech-university-db
+    restart: always
+    environment:
+      - POSTGRES_DB=tech_uni_db
+      - POSTGRES_USER=techUni
+      - POSTGRES_PASSWORD=techUn1Pass
+    ports:
+      - '5433:5432' 
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U techUni -d tech_uni_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - app-network
+
+  financy-mock-service:
+    build:
+      context: ./financy-mock-service
+      dockerfile: Dockerfile
+    container_name: financy-mock-service
+    ports:
+      - "8081:8081"
+    networks:
+      - app-network
+
+  tech-university:
+    build:
+      context: ./tech-university
+      dockerfile: Dockerfile
+    container_name: tech-university-app
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/tech_uni_db
+      SPRING_DATASOURCE_USERNAME: techUni
+      SPRING_DATASOURCE_PASSWORD: techUn1Pass
+      EXTERNAL_SERVICE_FINANCY_URL: http://financy-mock-service:8081/financy
+      SPRING_PROFILES_ACTIVE: docker
+    depends_on:
+      postgres:
+        condition: service_healthy
+      financy-mock-service: 
+        condition: service_started
+    networks:
+      - app-network
+
+volumes:
+  postgres_data:
+
+networks:
+  app-network:
+    driver: bridge
