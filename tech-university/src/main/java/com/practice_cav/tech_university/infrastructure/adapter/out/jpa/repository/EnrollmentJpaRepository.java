@@ -11,10 +11,9 @@ import java.util.Optional;
 @Repository
 public interface EnrollmentJpaRepository extends JpaRepository<EnrollmentEntity, Long> {
 
-    @EntityGraph(attributePaths = {"student", "course"})
+    @EntityGraph(attributePaths = {"student", "course", "validation"})
     List<EnrollmentEntity> findAll();
-    // Esto trae todo en una sola consulta JOIN, evitando el N+1
 
-    @EntityGraph(attributePaths = {"student", "course"})
+    @EntityGraph(attributePaths = {"student", "course", "validation"})
     Optional<EnrollmentEntity> findById(Long id);
 }

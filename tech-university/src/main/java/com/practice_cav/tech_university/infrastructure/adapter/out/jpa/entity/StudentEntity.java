@@ -26,6 +26,6 @@ public class StudentEntity {
     @Column(unique = true)
     private String documentNumber;
 
-    @OneToMany(mappedBy = "student", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "student", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<EnrollmentEntity> enrollments;
 }

@@ -35,21 +35,27 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         final String jwt;
         final String userEmail;
 
-        // 1. Validar si el encabezado trae el formato "Bearer {token}"
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             filterChain.doFilter(request, response);
             return;
         }
 
-        // 2. Extraer el token (quitando la palabra "Bearer ")
         jwt = authHeader.substring(7);
-        userEmail = jwtService.extractUsername(jwt);
 
-        // 3. Si hay email y el usuario no está ya autenticado en el contexto
+        // --- AQUÍ ESTÁ EL CAMBIO "ESTILO COOPCREDIT" ---
+        try {
+            userEmail = jwtService.extractUsername(jwt);
+        } catch (Exception e) {
+            // Si el token es basura o expiró, NO lances error.
+            // Simplemente deja que la petición siga (si es pública como Swagger, entrará)
+            filterChain.doFilter(request, response);
+            return;
+        }
+        // ----------------------------------------------
+
         if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             UserDetails userDetails = this.userDetailsService.loadUserByUsername(userEmail);
 
-            // 4. Validar token (puedes añadir lógica de expiración extra aquí)
             if (userEmail.equals(userDetails.getUsername())) {
                 UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                         userDetails,
@@ -57,8 +63,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                         userDetails.getAuthorities()
                 );
                 authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-
-                // 5. Establecer la autenticación en el contexto de Spring
                 SecurityContextHolder.getContext().setAuthentication(authToken);
             }
         }

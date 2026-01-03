@@ -4,10 +4,14 @@ import com.practice_cav.tech_university.domain.model.Student;
 import com.practice_cav.tech_university.infrastructure.adapter.in.web.dto.request.StudentRequest;
 import com.practice_cav.tech_university.infrastructure.adapter.in.web.dto.response.StudentResponse;
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 import org.mapstruct.MappingConstants;
 
 @Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
 public interface StudentWebMapper {
     Student toDomain(StudentRequest request);
+
+    @Mapping(target = "id", source = "id")
+    @Mapping(target = "name", expression = "java(domain.getFirstName() + ' ' + domain.getLastName())")
     StudentResponse toResponse(Student domain);
 }

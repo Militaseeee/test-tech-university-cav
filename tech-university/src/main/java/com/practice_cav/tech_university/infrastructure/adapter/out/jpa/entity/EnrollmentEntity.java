@@ -25,5 +25,9 @@ public class EnrollmentEntity {
     @JoinColumn(name = "course_id")
     private CourseEntity course;
 
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "validation_id", referencedColumnName = "id")
+    private EnrollmentValidationEntity validation;
+
     private LocalDateTime enrollmentDate;
 }

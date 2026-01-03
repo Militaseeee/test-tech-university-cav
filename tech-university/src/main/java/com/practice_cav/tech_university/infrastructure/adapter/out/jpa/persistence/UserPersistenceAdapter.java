@@ -2,6 +2,7 @@ package com.practice_cav.tech_university.infrastructure.adapter.out.jpa.persiste
 
 import com.practice_cav.tech_university.domain.model.User;
 import com.practice_cav.tech_university.domain.port.out.repository.UserRepositoryPort;
+import com.practice_cav.tech_university.domain.port.out.security.PasswordEncoderPort;
 import com.practice_cav.tech_university.infrastructure.adapter.out.jpa.mapper.UserDboMapper;
 import com.practice_cav.tech_university.infrastructure.adapter.out.jpa.repository.UserJpaRepository;
 import lombok.RequiredArgsConstructor;
@@ -15,12 +16,12 @@ public class UserPersistenceAdapter implements UserRepositoryPort {
 
     private final UserJpaRepository repository;
     private final UserDboMapper mapper;
-    private final PasswordEncoder passwordEncoder;
+    private final PasswordEncoderPort passwordEncoderPort;
 
     @Override
     public User save(User user) {
         // Encriptamos antes de guardar en la DB
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
+        user.setPassword(passwordEncoderPort.encode(user.getPassword()));
         return mapper.toDomain(repository.save(mapper.toDbo(user)));
     }
 
@@ -33,6 +34,6 @@ public class UserPersistenceAdapter implements UserRepositoryPort {
     @Override
     public boolean authenticate(String rawPassword, String encodedPassword) {
         // Usamos el passwordEncoder para comparar la clave plana vs la encriptada
-        return passwordEncoder.matches(rawPassword, encodedPassword);
+        return passwordEncoderPort.matches(rawPassword, encodedPassword);
     }
 }
