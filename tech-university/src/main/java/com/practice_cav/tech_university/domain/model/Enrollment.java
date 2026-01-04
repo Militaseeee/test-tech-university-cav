@@ -7,15 +7,17 @@ public class Enrollment {
     private Student student;
     private Course course;
     private LocalDateTime enrollmentDate;
+    private String externalCheckId;
 
     public Enrollment() {
     }
 
-    public Enrollment(Long id, Student student, Course course, LocalDateTime enrollmentDate) {
+    public Enrollment(Long id, Student student, Course course, LocalDateTime enrollmentDate, String externalCheckId) {
         this.id = id;
         this.student = student;
         this.course = course;
         this.enrollmentDate = enrollmentDate;
+        this.externalCheckId = externalCheckId;
     }
 
     public Long getId() {
@@ -48,5 +50,13 @@ public class Enrollment {
 
     public void setEnrollmentDate(LocalDateTime enrollmentDate) {
         this.enrollmentDate = enrollmentDate;
+    }
+
+    public String getExternalCheckId() {
+        return externalCheckId;
+    }
+
+    public void setExternalCheckId(String externalCheckId) {
+        this.externalCheckId = externalCheckId;
     }
 }

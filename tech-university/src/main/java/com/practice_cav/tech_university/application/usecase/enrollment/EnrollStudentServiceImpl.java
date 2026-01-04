@@ -3,6 +3,7 @@ package com.practice_cav.tech_university.application.usecase.enrollment;
 import com.practice_cav.tech_university.domain.exception.BusinessException;
 import com.practice_cav.tech_university.domain.exception.ResourceNotFoundException;
 import com.practice_cav.tech_university.domain.model.Enrollment;
+import com.practice_cav.tech_university.domain.model.FinancyStatus;
 import com.practice_cav.tech_university.domain.model.Student;
 import com.practice_cav.tech_university.domain.model.Course;
 import com.practice_cav.tech_university.domain.port.in.enrollment.EnrollStudentUseCase;
@@ -43,9 +44,9 @@ public class EnrollStudentServiceImpl implements EnrollStudentUseCase {
         Course course = courseRepositoryPort.findById(courseId)
                 .orElseThrow(() -> new ResourceNotFoundException("El curso no existe"));
 
-        // 3. REQUERIMIENTO: Validar deudas en el servicio externo (Mock)
-        boolean hasDebt = externalFinancyPort.checkDebt(student.getDocumentNumber());
-        if (hasDebt) {
+        //  Llamamos al mock y recibimos el OBJETO, no solo el boolean
+        FinancyStatus status = externalFinancyPort.checkDebt(student.getDocumentNumber());
+        if (status.isHasDebt()) {
             throw new BusinessException("Matrícula rechazada: El estudiante tiene deudas pendientes en el sistema financiero.");
         }
 
@@ -54,6 +55,8 @@ public class EnrollStudentServiceImpl implements EnrollStudentUseCase {
         enrollment.setStudent(student);
         enrollment.setCourse(course);
         enrollment.setEnrollmentDate(LocalDateTime.now());
+
+        enrollment.setExternalCheckId(status.getExternalCheckId());
 
         // 5. Guardar
         return enrollmentRepositoryPort.save(enrollment);
