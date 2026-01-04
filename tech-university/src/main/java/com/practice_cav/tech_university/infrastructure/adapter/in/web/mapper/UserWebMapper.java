@@ -10,7 +10,8 @@ import org.mapstruct.MappingConstants;
 @Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
 public interface UserWebMapper {
 
-    // Convierte lo que llega de la web al dominio
+    @Mapping(target = "name", source = "name")
+    @Mapping(target = "lastName", source = "lastName")
     User toDomain(RegisterRequest request);
 
     // Convierte el dominio a la respuesta de la web

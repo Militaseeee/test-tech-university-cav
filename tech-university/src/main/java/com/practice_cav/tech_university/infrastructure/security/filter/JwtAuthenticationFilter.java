@@ -40,32 +40,29 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             return;
         }
 
-        jwt = authHeader.substring(7);
-
-        // --- AQUÍ ESTÁ EL CAMBIO "ESTILO COOPCREDIT" ---
         try {
+            jwt = authHeader.substring(7);
             userEmail = jwtService.extractUsername(jwt);
-        } catch (Exception e) {
-            // Si el token es basura o expiró, NO lances error.
-            // Simplemente deja que la petición siga (si es pública como Swagger, entrará)
-            filterChain.doFilter(request, response);
-            return;
-        }
-        // ----------------------------------------------
 
-        if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-            UserDetails userDetails = this.userDetailsService.loadUserByUsername(userEmail);
+            if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+                UserDetails userDetails = this.userDetailsService.loadUserByUsername(userEmail);
 
-            if (userEmail.equals(userDetails.getUsername())) {
-                UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                        userDetails,
-                        null,
-                        userDetails.getAuthorities()
-                );
-                authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                SecurityContextHolder.getContext().setAuthentication(authToken);
+                // 2. Validar token (ahora que ya creamos el método en el punto anterior)
+                if (jwtService.isTokenValid(jwt, userDetails)) {
+                    UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
+                            userDetails, null, userDetails.getAuthorities()
+                    );
+                    authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                    SecurityContextHolder.getContext().setAuthentication(authToken);
+                }
             }
+        } catch (Exception e) {
+            // Si el token es inválido o expiró, no hacemos nada.
+            // El usuario simplemente no estará autenticado.
+            logger.error("Error de autenticación JWT: " + e.getMessage());
         }
+
+        // 3. SE LLAMA SOLO UNA VEZ AL FINAL
         filterChain.doFilter(request, response);
     }
 }

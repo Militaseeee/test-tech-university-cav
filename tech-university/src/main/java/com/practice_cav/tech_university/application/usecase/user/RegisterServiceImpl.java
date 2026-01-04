@@ -4,6 +4,7 @@ import com.practice_cav.tech_university.domain.exception.BusinessException;
 import com.practice_cav.tech_university.domain.model.User;
 import com.practice_cav.tech_university.domain.port.in.user.RegisterUseCase;
 import com.practice_cav.tech_university.domain.port.out.repository.UserRepositoryPort;
+import jakarta.transaction.Transactional;
 
 public class RegisterServiceImpl implements RegisterUseCase {
 
@@ -14,6 +15,7 @@ public class RegisterServiceImpl implements RegisterUseCase {
     }
 
     @Override
+    @Transactional
     public User register(User user) {
         if (userRepositoryPort.findByEmail(user.getEmail()).isPresent()) {
             throw new BusinessException("El email ya está en uso");
